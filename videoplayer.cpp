@@ -33,13 +33,15 @@ bool VideoPlayer::init()
     //Allocate an AVFormatContext.
     pAVFormatContext = avformat_alloc_context();//申请一个AVFormatContext结构的内存,并进行简单初始化
 
-    QString m_str_url="rtsp://admin:stfz2430@192.168.1.64:554/h264/main/av_stream";
+    //下面是公共的RTSP测试地址
+    char m_str_url[]="rtsp://218.204.223.237:554/live/1/0547424F573B085C/gsfp90ef4k0a6iap.sdp";
+    //QString m_str_url="rtsp://admin:stfz2430@192.168.1.64:554/h264/main/av_stream";
     AVDictionary *avdic=NULL;
     av_dict_set(&avdic, "rtsp_transport",  "tcp", 0); //rtsp默认采用UDP,容易丢包，造成花屏，这里改为TCP
     av_dict_set(&avdic,"max_delay","100",0);//设置最大延时
 
     //媒体文件的构成及基本信息
-    int result=avformat_open_input(&pAVFormatContext, m_str_url.toStdString().c_str(),nullptr,&avdic);
+    int result=avformat_open_input(&pAVFormatContext,m_str_url,nullptr,&avdic);
     if (result<0){
         qDebug()<<"打开视频流失败";
         return false;
@@ -113,6 +115,7 @@ void VideoPlayer::run()
         //只解析视频流
         if (packet.stream_index == videoStreamIndex)
         {
+            ///fwrite(packet->data,1,packet->size,fpSave);//can写数据到h264文件中
             QTime time;
             time.start();
             ret = avcodec_decode_video2(pAVCodecContext, pAVFrame, &got_picture,&packet);
